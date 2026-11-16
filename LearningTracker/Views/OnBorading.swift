@@ -12,7 +12,7 @@ struct OnBorading: View {
     private var hasCompletedOnboarding = false
     
     //Create viewMidel This is my instance. I'm responsible for its lifetime
-    @State private var viewModel: SetNewGoalViewModel?
+    @State private var viewModel: LogLearningViewModel?
     
     var body: some View {
         VStack(spacing: 24){
@@ -27,13 +27,24 @@ struct OnBorading: View {
             
             Spacer(minLength: 0)
             
-            PrimaryButton(text: "Start Learning", action: {
+            Button {
                 guard let viewModel else { return }
                 //MARK: - set target
                 viewModel.setTarget()
                 // Navigate to the next screen
                 hasCompletedOnboarding = true
-            })
+            } label: {
+
+                    Text("Start Learning")
+                           .font(Fonts.buttonText)
+                           .foregroundStyle(.white)
+                           .frame(width: 151 , height: 46)
+            }
+            .buttonStyle(.glassProminent) //native Liquid glass
+            .buttonBorderShape(.roundedRectangle(radius: .infinity))
+            .tint(Color.orange)
+            
+           
             Text("You can edit your desire later")
                 .font(Fonts.statusText)
                 .foregroundColor(Color.gray)
@@ -50,9 +61,8 @@ struct OnBorading: View {
                 )
                 
                 //Create instance
-                viewModel = SetNewGoalViewModel(
-                    target: target,
-                    modelContext: modelContext
+                viewModel = LogLearningViewModel(
+                    target: target, modelContext: modelContext
                 )
             }
         }

@@ -4,6 +4,9 @@ import SwiftData
 struct Home: View {
     
     @Environment(\.modelContext) private var modelContext
+    //to know the current lifecycle state of app (active or running in the background)
+    @Environment(\.scenePhase) private var scenePhase
+
     
     //Get (Current Target + the logs for calander row) Data From already saved data in the ModelContext
     @Query private var targets: [Target] //it return collection
@@ -59,9 +62,22 @@ struct Home: View {
                         }
                         .padding()
 
-                        // MARK: - Log Controls
+                        // MARK: - Log Controls / Target Mark Result
                         if let logViewModel {
-                            LogControlButtons(viewModel: logViewModel, hasLoggedToday: calendarViewModel.hasLoggedToday)
+
+                            //created in here locally then passed
+                            if let isReached = logViewModel.isTargetReached {
+
+                                TargetMarked(logViewModel: logViewModel,isReached: isReached)
+
+                            } else {
+
+                                LogControlButtons(
+                                    viewModel: logViewModel,
+                                    hasLoggedToday: calendarViewModel.hasLoggedToday
+                                )
+                            }
+                            
                         }
 
                     } else {
@@ -74,7 +90,7 @@ struct Home: View {
                 // MARK: - Edit Screen
                 .navigationDestination(isPresented: $showEditTarget) {
                     if let target = targets.first {
-                        editTarget(target: target)
+                        editTarget(logViewModel: logViewModel,target: target)
                     }
                 }
                 // MARK: - Calendar Screen
@@ -114,6 +130,9 @@ struct Home: View {
             //whenever SwiftData changes, update the dailyLogs in the ViewModel
             .onChange(of: dailyLogs) { _, newLogs in
                 calendarViewModel.updateDailyLogs(newLogs)
+                //update LogViewModel for tracking streak
+                logViewModel?.allDailyLogs = newLogs
+
             }
             //when a new day begins, if log exist add it to the dailylog array if not create and mark skipped
             .onChange(of: currentDay) { _, newDay in
@@ -125,6 +144,13 @@ struct Home: View {
                     logStatus: .skip
                 )
                 logViewModel?.updateDailyLog(dailyLog)
+            }
+            //Recheck the user's streak whenever they return to the app, whether from the Home Screen or App Switcher.
+            .onChange(of: scenePhase) { _, newPhase in
+                //if user enter the app update streak status for simpler comupation rather than timer
+                guard newPhase == .active else { return }
+
+                logViewModel?.trackSkipped()
             }
             //listen for iOS telling the calendar day has changed. When it happens, update currentDay at midnight
             .onReceive(
@@ -138,7 +164,6 @@ struct Home: View {
     }
 
 
-
 struct LogControlButtons: View {
     
     //and to decide that see who need to entrate with the data
@@ -146,37 +171,38 @@ struct LogControlButtons: View {
     let hasLoggedToday: Bool
  
     var body: some View {
+        
         // MARK: - Log Streak
         Button {
             viewModel.setStatus(status: LogStatus.streak)
         } label: {
 
-            ZStack {
-
-                Circle()
-                    .fill( hasLoggedToday ? Color.gray : Color.orange)
-                    .frame(width: 272, height: 272)
-
                 Text("Log as Learned")
-                    .font(Fonts.cardText)
-                    .foregroundColor(.white)
-            }
+                       .font(Fonts.cardText)
+                       .foregroundStyle(hasLoggedToday ? .gray : .white)
+                    .frame(width: 272, height: 272)
         }
-        .glassEffect()
+        .buttonStyle(.glassProminent) //native Liquid glass
+        .buttonBorderShape(.circle)
+        .tint(Color.orange)
         .disabled(hasLoggedToday)
         .padding(.bottom, Spacing.sectionSpace)
-
-    
-    
+        
         // MARK: - Log Freeze
-        PrimaryButton(
-            text: "Freeze for a day",
-            isDisabled: hasLoggedToday,
-            isFreezeBtn: true
-        ) {
+        Button {
             viewModel.setStatus(status: LogStatus.freeze)
-        }
+        } label: {
 
+                Text("Freeze for a day")
+                       .font(Fonts.buttonText)
+                       .foregroundStyle(hasLoggedToday ? .gray : .white)
+                       .frame(width:  Spacing.buttonFreeze, height: Spacing.buttonFHeight)
+        }
+        .buttonStyle(.glassProminent) //native Liquid glass
+        .buttonBorderShape(.roundedRectangle(radius: .infinity))
+        .tint(Color.cyan)
+        .disabled(hasLoggedToday || viewModel.hasUsedAllFreezes)
+        
         // MARK: - Freeze Info Dynamic (Change)
         Text("\(viewModel.target.freezeCounter) out of \(viewModel.target.freezeAmount) Freezes used")
             .font(Fonts.cardText)
@@ -184,8 +210,8 @@ struct LogControlButtons: View {
     }
 }
 
- 
-    struct  ActivityHeader: View {
+
+ struct ActivityHeader: View {
         var onEdit: () -> Void
         var onCalander: () -> Void
         var goalTitle: String
@@ -193,7 +219,7 @@ struct LogControlButtons: View {
         var body: some View{
             
             HStack(spacing: 42){
-                Text("Goal: \(goalTitle)")
+                Text("Activity")
                     .font(Fonts.homeTitle).frame(maxWidth: .infinity, alignment: .leading)
         
                 HStack(spacing: 4){
@@ -213,9 +239,7 @@ struct LogControlButtons: View {
     }
 
 
-
-
-struct TopButton: View{
+struct TopButton: View {
     
     //no args no retrun func
     var action: () -> Void
@@ -233,30 +257,28 @@ struct TopButton: View{
                  .scaledToFit()
                 .frame(maxWidth: 35, maxHeight: 36)
         }
-        .buttonStyle(.glass)
+        .buttonStyle(.glass) //native liquid glass
         .cornerRadius(.infinity)
         .frame(maxWidth: 44, maxHeight: 44)
     }
-
-    
 }
 
 
 struct LogLearningCards: View {
     let logType: String
+    
     //Changes
     let number: Int
     let title: String
     let tint: Color
-
+    private let cardShape = RoundedRectangle(
+            cornerRadius: 34,
+            style: .continuous)
+    
+    private var displayDay: String {
+            number == 1 ? "day" : "days"
+        }
     var body: some View {
-
-        ZStack {
-
-            RoundedRectangle(cornerRadius: 34)
-                .fill(.clear)
-                .frame(width: 177, height: 102)
-                .glassEffect()
 
             VStack(spacing: 4) {
 
@@ -266,28 +288,36 @@ struct LogLearningCards: View {
                     .frame(width: 20, height: 24)
                     .foregroundColor(tint)
 
-                Text("\(number) Days")
+                Text("\(number) \(displayDay)")
                     .font(Fonts.cardText)
 
                 Text(title)
                     .font(Fonts.body)
+            }.frame(width: 177, height: 102)
+            .background {
+                cardShape
+                    .fill(Color(red: 26/255, green: 26/255, blue: 26/255).opacity(0.30))
             }
+            .glassEffect(
+                .regular,
+                in: cardShape
+            )
         }
-    }
 }
 
-
-
 struct TargetMarked: View {
+    
+    let logViewModel: LogLearningViewModel
+    @State private var showSetNewGoal = false
     
     let isReached: Bool
     var iconName: String { isReached ?"hands.clap.fill": "xmark.seal"}
     var title: String { isReached ? "Well done!" : "You didn't reach your goal this time." }
     var subTitle: String { isReached ? "Ready for your next  let title goal?" : "Want to set another goal?"
     }
-        
+    
     var body: some View {
-                
+        
         VStack(spacing: 19 ) {
             
             Image(systemName: iconName )
@@ -297,70 +327,36 @@ struct TargetMarked: View {
                 .foregroundColor(Color.orange)
             
             VStack(spacing: Spacing.subTitleSpace){
-               
+                
                 Text(title)
-                .font(Fonts.buttonText)
+                    .font(Fonts.buttonText)
                 
                 Text(subTitle)
                     .font(Fonts.body).foregroundColor(Color.gray)
+            }.padding(.bottom , 64 )
+            
+            
+            // MARK: - Set New Goal
+            Button {
+                showSetNewGoal = true
+            } label: {
+                
+                HStack(spacing: 4) {
+                    
+                    Image(systemName: "pencil.and.outline")
+                        .font(Fonts.buttonText)
+                    
+                    Text("Set a goal")
+                        .font(Fonts.buttonText)
+                }
+                .buttonStyle(.glassProminent) //native Liquid glass
+                .buttonBorderShape(.roundedRectangle(radius: .infinity))
+                .tint(Color.orange)
+                .navigationDestination(isPresented: $showSetNewGoal) {
+                    // new goal screen
+                    setNewGoal(viewModel: logViewModel)
+                }
             }
-        }.padding(.vertical, 65)
-        
-    }
-}
-
-
-
-
-
-// TEST ONLY ONLY
-import Foundation
-struct DummyDailyLogs {
-
-    static let logs: [DailyLog] = {
-
-        let calendar = Calendar.current
-
-        let today = calendar.startOfDay(for: Date())
-
-        // Generate dates relative to today.
-        func date(daysAgo: Int) -> Date {
-            calendar.date(
-                byAdding: .day,
-                value: -daysAgo,
-                to: today
-            )!
         }
-
-        return [
-
-            // Learned days
-            DailyLog(dayDate: date(daysAgo: 0), logStatus: .streak),
-            DailyLog(dayDate: date(daysAgo: 1), logStatus: .streak),
-            DailyLog(dayDate: date(daysAgo: 3), logStatus: .streak),
-            DailyLog(dayDate: date(daysAgo: 5), logStatus: .streak),
-            DailyLog(dayDate: date(daysAgo: 8), logStatus: .streak),
-            DailyLog(dayDate: date(daysAgo: 10), logStatus: .streak),
-
-            // Freeze days
-            DailyLog(dayDate: date(daysAgo: 2), logStatus: .freeze),
-            DailyLog(dayDate: date(daysAgo: 6), logStatus: .freeze),
-            DailyLog(dayDate: date(daysAgo: 12), logStatus: .freeze),
-
-            // Skipped days (no tint)
-            DailyLog(dayDate: date(daysAgo: 4), logStatus: .skip),
-            DailyLog(dayDate: date(daysAgo: 7), logStatus: .skip),
-            DailyLog(dayDate: date(daysAgo: 9), logStatus: .skip)
-        ]
-
-    }()
-}
-
-#Preview {
-    
-    let viewModel = CalendarViewModel(
-           dailyLogs: DummyDailyLogs.logs
-       )
-    
-        // Home(CalendarViewModel: viewModel)
+    }
 }

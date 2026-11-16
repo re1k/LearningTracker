@@ -1,16 +1,17 @@
 import SwiftUI
 
 
-struct setNewGoal: View{
+struct setNewGoal : View {
     //(Bindable) create bindings to the ViewModel's properties using
     //I can connect UI controls directly to this object's properties
     
     //(Binding) What it means: You don't own the value. Someone else owns it, and you receive a connection to it. "Give me access to modify your value.", so in here the parent screen would have binded
     
     //and to decide that see who need to entrate with the data
-    @Bindable var viewModel: SetNewGoalViewModel
+    @Bindable var viewModel: LogLearningViewModel
     
     var body: some View{
+        
         VStack(spacing:Spacing.elementSpace){
             
             // MARK: - Goal
@@ -21,11 +22,11 @@ struct setNewGoal: View{
             TextField("\(viewModel.target.goal)", text: $viewModel.target.goal)
                 .foregroundColor(Color.white)
             Rectangle().fill(Color.gray).frame(height: 0.3)
-        }
+        }.padding(.bottom, Spacing.sectionSpace)
         
         
         // MARK: - Duration Chips
-        VStack(spacing: Spacing.subTitleSpace) {
+        VStack(spacing: Spacing.elementSpace) {
 
             Text("I want to learn in it in a")
                 .font(Fonts.subtitle)
@@ -64,8 +65,5 @@ struct setNewGoal: View{
     }
 }
 
-#Preview {
-   //setNewGoal()
-}
 
 

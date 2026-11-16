@@ -177,10 +177,7 @@ class CalendarViewModel {
     
     // MARK: - Update Daily Logs
     func updateDailyLogs(_ logs: [DailyLog]) {
-
         dailyLogs = logs
-
         prepareLogsDictionary()
     }
-    
 }

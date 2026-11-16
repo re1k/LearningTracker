@@ -1,26 +1,25 @@
 import SwiftUI
 import SwiftData
 
-struct editTarget:View {
+struct editTarget : View {
     //manage values inside UI views, pass it to viewModel
     @Environment(\.modelContext) private var modelContext
     
-    @State private var viewModel: SetNewGoalViewModel?
+    @State var logViewModel: LogLearningViewModel?
     @Bindable var target: Target
-    
+
     //Popup regarding streak reset
     @State private var showingUpdateConfirmation = false
     //On done go ack home and close the page
     @Environment(\.dismiss) private var dismiss
-
 
     var body: some View{
         
         VStack(){
 
             //ASSIGN WHEN NOT NULL
-            if let viewModel {
-                setNewGoal(viewModel: viewModel)
+            if let logViewModel {
+                setNewGoal(viewModel: logViewModel)
             }
             
             
@@ -51,8 +50,16 @@ struct editTarget:View {
                     }
 
                     Button("Update", role: .destructive) {
-                        viewModel?.updateTarget()
-                        //retrun home
+                        print("1. Before updating target")
+
+                        logViewModel?.updateTarget()
+
+                        print("2. Before resetting today's log")
+
+                        logViewModel?.resetTodaysLog()
+
+                        print("3. After resetting today's log")
+
                         dismiss()
                     }
 
@@ -64,9 +71,9 @@ struct editTarget:View {
         
         //if no instance of the viewModel exists create it
         .task {
-            if viewModel == nil {
+            if logViewModel == nil {
                 //Create instance
-                viewModel = SetNewGoalViewModel(
+                logViewModel = LogLearningViewModel(
                     target: target,
                     modelContext: modelContext
                 )

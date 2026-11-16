@@ -4,7 +4,6 @@ import SwiftData
 @main
 struct MyApp: App {
     
-    
     //for rounting to home
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
