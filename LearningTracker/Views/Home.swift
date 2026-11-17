@@ -7,7 +7,6 @@ struct Home: View {
     //to know the current lifecycle state of app (active or running in the background)
     @Environment(\.scenePhase) private var scenePhase
 
-    
     //Get (Current Target + the logs for calander row) Data From already saved data in the ModelContext
     @Query private var targets: [Target] //it return collection
     
@@ -36,48 +35,47 @@ struct Home: View {
                             showEditTarget = true
                         }, onCalander: {
                             showCalanderTarget = true
-                        } ,
-                        goalTitle: target.goal)
+                        }).padding(.horizontal, Spacing.pageMargine)
 
-                        // MARK: - Week calendar row
-                        CalendarWeekRow(viewModel: calendarViewModel)
-                            .padding(.top, Spacing.pageMargine)
-
-                        // MARK: - Log streak/Freeze Cards
-                        HStack(spacing: 12) {
-
-                            LogLearningCards(
-                                logType: "flame.fill",
-                                number: target.streakCounter,
-                                title: "Learned",
-                                tint: .orange
-                            )
-
-                            LogLearningCards(
-                                logType: "snowflake",
-                                number: target.freezeCounter,
-                                title: "Freezed",
-                                tint: .cyan
-                            )
-                        }
-                        .padding()
-
+                        VStack(spacing: Spacing.elementSpace)
+                        {
+                            // MARK: - Week calendar row
+                            CalendarWeekRow(viewModel: calendarViewModel,currentDay: currentDay)
+                                .padding(.top, Spacing.elementSpace)
+                            
+                            // MARK: - Log streak/Freeze Cards
+                            HStack(spacing: 12) {
+                                
+                                LogLearningCards(
+                                    logType: "flame.fill",
+                                    number: target.streakCounter,
+                                    title: "Learned",
+                                    tint: .orange
+                                )
+                                
+                                LogLearningCards(
+                                    logType: "snowflake",
+                                    number: target.freezeCounter,
+                                    title: "Freezed",
+                                    tint: .cyan
+                                )
+                            }
+                        }.padding(.horizontal, 14)
+                        
                         // MARK: - Log Controls / Target Mark Result
                         if let logViewModel {
 
                             //created in here locally then passed
                             if let isReached = logViewModel.isTargetReached {
 
-                                TargetMarked(logViewModel: logViewModel,isReached: isReached)
+                                TargetMarked(logViewModel: logViewModel, target: target, isReached: isReached).padding(.top, 64)
 
                             } else {
-
                                 LogControlButtons(
                                     viewModel: logViewModel,
                                     hasLoggedToday: calendarViewModel.hasLoggedToday
-                                )
+                                ).padding(.top, 48)
                             }
-                            
                         }
 
                     } else {
@@ -85,8 +83,6 @@ struct Home: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .padding(.vertical, Spacing.sectionSpace)
-                .padding(.horizontal, Spacing.pageMargine)
                 // MARK: - Edit Screen
                 .navigationDestination(isPresented: $showEditTarget) {
                     if let target = targets.first {
@@ -121,7 +117,9 @@ struct Home: View {
                     logViewModel = LogLearningViewModel(
                         target: target,
                         dailyLog: dailyLog,
-                        allDailyLogs: dailyLogs,
+                        allDailyLogs: todayLog == nil //send todays log to append it
+                                ? dailyLogs + [dailyLog]
+                                : dailyLogs,
                         modelContext: modelContext
                     )
                 }
@@ -150,6 +148,8 @@ struct Home: View {
                 //if user enter the app update streak status for simpler comupation rather than timer
                 guard newPhase == .active else { return }
 
+                // Update today's date when the user returns to the app,
+                // in case the device date changed while the app was in the background.
                 logViewModel?.trackSkipped()
             }
             //listen for iOS telling the calendar day has changed. When it happens, update currentDay at midnight
@@ -163,7 +163,6 @@ struct Home: View {
         }
     }
 
-
 struct LogControlButtons: View {
     
     //and to decide that see who need to entrate with the data
@@ -172,70 +171,79 @@ struct LogControlButtons: View {
  
     var body: some View {
         
-        // MARK: - Log Streak
-        Button {
-            viewModel.setStatus(status: LogStatus.streak)
-        } label: {
-
+        VStack(spacing: 48){
+            // MARK: - Log Streak
+            Button {
+                viewModel.setStatus(status: LogStatus.streak)
+            } label: {
+                
                 Text("Log as Learned")
-                       .font(Fonts.cardText)
-                       .foregroundStyle(hasLoggedToday ? .gray : .white)
+                    .font(Fonts.buttonText)
+                    .foregroundStyle(hasLoggedToday ? .gray : .white)
                     .frame(width: 272, height: 272)
+            }
+            .buttonStyle(.glassProminent) //native Liquid glass
+            .buttonBorderShape(.circle)
+            .tint(hasLoggedToday ? .clear : .orange)
+            .buttonStyle(.glass)
+            .tint(Color.orange)
+            .disabled(hasLoggedToday)
+            
+            VStack(spacing: Spacing.pageMargine) {
+                // MARK: - Log Freeze
+                Button {
+                    viewModel.setStatus(status: LogStatus.freeze)
+                } label: {
+                    
+                    Text("Freeze for a day")
+                        .font(Fonts.buttonText)
+                        .frame(width:  268 , height: 38 )
+                        .foregroundStyle(hasLoggedToday ? .gray : .white)
+                }
+                .buttonStyle(.glassProminent) //native Liquid glass
+                .buttonBorderShape(.roundedRectangle(radius: .infinity))
+                .tint(hasLoggedToday ? .clear : .cyan)
+                .disabled(hasLoggedToday || viewModel.hasUsedAllFreezes)
+                
+                // MARK: - Freeze Info Dynamic (Change)
+                Text("\(viewModel.target.freezeCounter) out of \(viewModel.target.freezeAmount) Freezes used")
+                    .font(Fonts.body)
+                    .foregroundColor(Color.gray)
+            }
         }
-        .buttonStyle(.glassProminent) //native Liquid glass
-        .buttonBorderShape(.circle)
-        .tint(Color.orange)
-        .disabled(hasLoggedToday)
-        .padding(.bottom, Spacing.sectionSpace)
         
-        // MARK: - Log Freeze
-        Button {
-            viewModel.setStatus(status: LogStatus.freeze)
-        } label: {
-
-                Text("Freeze for a day")
-                       .font(Fonts.buttonText)
-                       .foregroundStyle(hasLoggedToday ? .gray : .white)
-                       .frame(width:  Spacing.buttonFreeze, height: Spacing.buttonFHeight)
-        }
-        .buttonStyle(.glassProminent) //native Liquid glass
-        .buttonBorderShape(.roundedRectangle(radius: .infinity))
-        .tint(Color.cyan)
-        .disabled(hasLoggedToday || viewModel.hasUsedAllFreezes)
-        
-        // MARK: - Freeze Info Dynamic (Change)
-        Text("\(viewModel.target.freezeCounter) out of \(viewModel.target.freezeAmount) Freezes used")
-            .font(Fonts.cardText)
-            .foregroundColor(Color.gray)
     }
 }
 
 
  struct ActivityHeader: View {
+     
         var onEdit: () -> Void
         var onCalander: () -> Void
-        var goalTitle: String
 
         var body: some View{
             
-            HStack(spacing: 42){
-                Text("Activity")
-                    .font(Fonts.homeTitle).frame(maxWidth: .infinity, alignment: .leading)
-        
-                HStack(spacing: 4){
+            VStack(){
+                HStack(spacing: 42){
+                    Text("Activity")
+                        .font(Fonts.homeTitle).frame(maxWidth: .infinity, alignment: .leading)
                     
-                    //MARK: - navigate to calander later
-                    TopButton(action: onCalander ,IconName: "calendar")
-                    
-                    //MARK: - navigate to Edit later
-                    TopButton(action: onEdit, IconName: "pencil.and.outline")
+                    HStack(spacing: 12){
+                        
+                        //MARK: - navigate to calander later
+                        TopButton(action: onCalander ,IconName: "calendar")
+                        
+                        //MARK: - navigate to Edit later
+                        TopButton(action: onEdit, IconName: "pencil.and.outline")
+                    }
                 }
+                //MARK: -  Date of today update
+                Text("\(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)))")
+                    .font(Fonts.subtitle).frame(maxWidth: .infinity, alignment: .leading)
+                    .foregroundColor(Color.gray)
             }
-            //MARK: -  Date of today update
-            Text("\(Date.now.formatted(.dateTime.weekday(.wide).day().month(.wide)))")
-                .font(Fonts.subtitle).frame(maxWidth: .infinity, alignment: .leading)
-                .foregroundColor(Color.gray)
         }
+     
     }
 
 
@@ -253,13 +261,12 @@ struct TopButton: View {
         Button (action: action)
          {
             Image(systemName: IconName)
-                 .resizable()
-                 .scaledToFit()
-                .frame(maxWidth: 35, maxHeight: 36)
+                 .font(.system(size: 20, weight: .medium))
+                 .frame(maxWidth: 44, maxHeight: 44)
         }
         .buttonStyle(.glass) //native liquid glass
-        .cornerRadius(.infinity)
         .frame(maxWidth: 44, maxHeight: 44)
+        .clipShape(Circle())
     }
 }
 
@@ -293,13 +300,9 @@ struct LogLearningCards: View {
 
                 Text(title)
                     .font(Fonts.body)
-            }.frame(width: 177, height: 102)
-            .background {
-                cardShape
-                    .fill(Color(red: 26/255, green: 26/255, blue: 26/255).opacity(0.30))
-            }
+            }.frame(width: 180, height: 102)
             .glassEffect(
-                .regular,
+                .regular.tint(.black.opacity(0.26)),
                 in: cardShape
             )
         }
@@ -308,12 +311,14 @@ struct LogLearningCards: View {
 struct TargetMarked: View {
     
     let logViewModel: LogLearningViewModel
+    let target: Target
+    
     @State private var showSetNewGoal = false
     
     let isReached: Bool
     var iconName: String { isReached ?"hands.clap.fill": "xmark.seal"}
     var title: String { isReached ? "Well done!" : "You didn't reach your goal this time." }
-    var subTitle: String { isReached ? "Ready for your next  let title goal?" : "Want to set another goal?"
+    var subTitle: String { isReached ? "Ready for your next goal?" : "Want to set another goal?"
     }
     
     var body: some View {
@@ -349,13 +354,16 @@ struct TargetMarked: View {
                     Text("Set a goal")
                         .font(Fonts.buttonText)
                 }
-                .buttonStyle(.glassProminent) //native Liquid glass
-                .buttonBorderShape(.roundedRectangle(radius: .infinity))
-                .tint(Color.orange)
-                .navigationDestination(isPresented: $showSetNewGoal) {
-                    // new goal screen
-                    setNewGoal(viewModel: logViewModel)
-                }
+                .foregroundStyle(.primary)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+            }
+            .buttonStyle(.glassProminent) //native Liquid glass
+            .buttonBorderShape(.roundedRectangle(radius: .infinity))
+            .tint(Color.orange)
+            .navigationDestination(isPresented: $showSetNewGoal) {
+                // new goal screen
+                setTarget(logViewModel: logViewModel,target: target)
             }
         }
     }

@@ -25,9 +25,9 @@ final class LogLearningViewModel {
      }
 
     // MARK: - Home initializer
-    init(target: Target,dailyLog: DailyLog, allDailyLogs: [DailyLog], modelContext: ModelContext) {
+    init(target: Target,dailyLog: DailyLog?, allDailyLogs: [DailyLog], modelContext: ModelContext) {
             self.target = target
-            self.dailyLog = dailyLog
+            self.dailyLog = dailyLog //may or may not exist
             self.allDailyLogs = allDailyLogs
             self.modelContext = modelContext
         }
@@ -148,11 +148,20 @@ final class LogLearningViewModel {
         print("--Log timestamp:--", dailyLog.dayDate)
         print("--Current timestamp:--", Date())
 
+        //saves the daily log in SwiftData.
         modelContext.insert(dailyLog)
 
         do {
             try modelContext.save()
-            
+
+                // Synchronize tracking logs inside LogViewmodel
+                if let index = allDailyLogs.firstIndex(where: {
+                    $0.persistentModelID == dailyLog.persistentModelID
+                }) {
+                    allDailyLogs[index] = dailyLog
+                } else {
+                    allDailyLogs.append(dailyLog)
+                }
             // Check whether the target has been reached
             markReached()
             
@@ -186,7 +195,6 @@ final class LogLearningViewModel {
     }
     
     // MARK: - Streak Tracking
-    
     private func getLastProtectedLog() -> DailyLog? {
 
         var latestLog: DailyLog?
@@ -225,10 +233,22 @@ final class LogLearningViewModel {
                 lastProtectedLog.dayDate
             ) / 3600
         
+        print("------ STREAK DEBUG ------")
+        print("Last protected date:", lastProtectedLog.dayDate)
+        print("Current date:", Date())
+        print("Hours passed:", hoursPassed)
+        print("All logs count:", allDailyLogs.count)
+        print("Last status:", lastProtectedLog.logStatus)
+        print("Target reached:", String(describing: isTargetReached))
+        print("-------------------------")
+        
+        
         //the user's streak is lost and the goal is unsuccessful.
         if hoursPassed >= 32 {
             
             target.streakCounter = 0
+            target.freezeCounter = 0
+            
             markUnreached()
 
             //saves the restet to swiftData

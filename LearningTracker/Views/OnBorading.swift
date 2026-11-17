@@ -15,7 +15,8 @@ struct OnBorading: View {
     @State private var viewModel: LogLearningViewModel?
     
     var body: some View {
-        VStack(spacing: 24){
+        
+           VStack(spacing: 0){
             
             Greetings()
             
@@ -27,27 +28,28 @@ struct OnBorading: View {
             
             Spacer(minLength: 0)
             
-            Button {
-                guard let viewModel else { return }
-                //MARK: - set target
-                viewModel.setTarget()
-                // Navigate to the next screen
-                hasCompletedOnboarding = true
-            } label: {
-
-                    Text("Start Learning")
+               VStack(spacing: Spacing.elementSpace){
+                   Button {
+                       guard let viewModel else { return }
+                       //MARK: - set target
+                       viewModel.setTarget()
+                       // Navigate to the next screen
+                       hasCompletedOnboarding = true
+                   } label: {
+                       
+                       Text("Start Learning")
                            .font(Fonts.buttonText)
                            .foregroundStyle(.white)
-                           .frame(width: 151 , height: 46)
-            }
-            .buttonStyle(.glassProminent) //native Liquid glass
-            .buttonBorderShape(.roundedRectangle(radius: .infinity))
-            .tint(Color.orange)
-            
-           
-            Text("You can edit your desire later")
-                .font(Fonts.statusText)
-                .foregroundColor(Color.gray)
+                           .frame(width: 151 , height: 38)
+                   }
+                   
+                   .buttonStyle(.glassProminent)
+                   .tint(Color.orange) //native Liquid glass
+                   .buttonBorderShape(.roundedRectangle(radius: .infinity))
+                   
+                   Text("You can edit your desire later")
+                       .font(Fonts.statusText)
+                   .foregroundColor(Color.gray)}
         }
         .padding( .horizontal, Spacing.pageMargine)
         //if no instance of the viewModel exists create it

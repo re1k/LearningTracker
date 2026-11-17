@@ -20,7 +20,7 @@ struct setNewGoal : View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             
             TextField("\(viewModel.target.goal)", text: $viewModel.target.goal)
-                .foregroundColor(Color.white)
+                .foregroundColor(Color.primary)
             Rectangle().fill(Color.gray).frame(height: 0.3)
         }.padding(.bottom, Spacing.sectionSpace)
         
@@ -34,7 +34,7 @@ struct setNewGoal : View {
 
             GlassEffectContainer(spacing: 8) {
 
-                HStack(spacing: 24) {
+                HStack(spacing: Spacing.elementSpace) {
                     ForEach(DurationOptions.allCases, id: \.self) { option in
 
                         let isSelected = viewModel.target.duration == option.rawValue
@@ -46,13 +46,13 @@ struct setNewGoal : View {
 
                             Text(option.title)
                                 .font(Fonts.buttonText)
-                                .padding(.horizontal, 16)
-                                .padding(.vertical, Spacing.elementSpace)
-                                .foregroundColor(isSelected ? .white : .primary)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical,7)
+                                .foregroundColor(isSelected ? .white : .secondary)
 
                         }
-                        .buttonStyle(.glass)
-                        .background(
+                         .buttonStyle(.glassProminent)
+                        .tint(
                             isSelected ? Color.orange : Color.gray.opacity(0.15)
                         )
                         .cornerRadius(999)

@@ -21,12 +21,17 @@ struct MyApp: App {
         WindowGroup {
             
             //Routing Screens
-            if hasCompletedOnboarding
-            { Home() }
-            else
-            { OnBorading() }
-            
+            ZStack {
+                if hasCompletedOnboarding {
+                    Home()
+                        .transition(.opacity)
+                } else {
+                    OnBorading()
+                        .transition(.opacity)
                 }
+            } //for smoother transition to home
+            .animation(.easeInOut(duration: 0.5), value: hasCompletedOnboarding)
+        }
         //singleton
         .modelContainer(for: [
                   Target.self,

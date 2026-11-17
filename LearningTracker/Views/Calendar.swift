@@ -28,7 +28,7 @@ struct CalendarHistory: View {
                 Text("Activities")
                     .font(Fonts.ScreenTitle)
             }
-        }
+        }.padding(.bottom, 10)
     }
 }
 
@@ -50,7 +50,8 @@ struct CalendarMonthGrid : View {
                 )
             )
             .font(.headline)
-            .padding(.leading , 16 )
+            .padding(.top ,16 )
+            .padding(.leading ,16 )
             .frame(maxWidth: .infinity, alignment: .leading)
 
             //lazyVGrid arranges its children into columns, 7 flexible columns for the 7 weekdays.
@@ -95,20 +96,20 @@ struct CalendarWeekRow: View {
     
     //No @State as it does not Own the ViewModel,it receives a reference to an existing instance, Home Owns it
     let viewModel: CalendarViewModel
+    let currentDay: Date // to know new week came
     
     var body: some View {
 
         HStack(spacing: 10) {
-
             //loop to generate the cells of a week, where the viewModel provides dates of current week
-            ForEach( viewModel.getCurrentWeekDates() , id: \.self) { date in
+            ForEach( viewModel.getCurrentWeekDates(for: currentDay) , id: \.self) { date in
 
-                VStack(spacing: 6) {
+                VStack(spacing: 4) {
 
                     //first letter of the weekday
                     Text(date.formatted(.dateTime.weekday(.narrow)))
                         .font(Fonts.cardText)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
 
                     //generates style based on status logged
                     DayCell(
@@ -136,9 +137,9 @@ struct DayCell: View {
     private var backgroundColor: Color {
 
         //todays cell is highlighted only if it has no log.
-        if isToday && log == nil {
-            return .orange
-        }
+        if isToday && (log == nil || log?.logStatus == .skip) {
+                return .orange
+            }
 
         switch log?.logStatus {
             
@@ -165,7 +166,7 @@ struct DayCell: View {
         case .freeze:
             return .cyan
         default:
-            return .white
+            return .primary
         }
     }
 

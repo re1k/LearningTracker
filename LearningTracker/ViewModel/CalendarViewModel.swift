@@ -47,14 +47,14 @@ class CalendarViewModel {
     
     
     // MARK: - Generate Week Dates
-    func getCurrentWeekDates() -> [Date] {
+    func getCurrentWeekDates(for date: Date) -> [Date] {
         
         //checks whether an optional instance contains a wrapped value. If it does, the value is bound to (interval) variable
         //If the optional contains nil, the else branch executes
         guard let dateInterval = calendar.dateInterval(
             //search for a week in a year
             of: .weekOfYear,
-            for: Date() //that has todays date in it
+            for: date //that has todays date in it
         ) else {
             return []
         } //returns optinal dateInterval, having (.start) be first day of current week and (.end) is last day of week
