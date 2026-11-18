@@ -106,6 +106,15 @@ struct Home: View {
                     //if no instance of the viewModel exists create it
                     guard logViewModel == nil,
                           let target = targets.first else { return }
+                    
+                    //Debug seeeding
+#if DEBUG
+   SeedData.createIfNeeded(
+       in: modelContext,
+       target: target
+   )
+   #endif
+                    
                     let todayLog = dailyLogs.first {
                         Calendar.current.isDateInToday($0.dayDate)
                     }

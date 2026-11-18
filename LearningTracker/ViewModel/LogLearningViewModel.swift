@@ -242,9 +242,8 @@ final class LogLearningViewModel {
         print("Target reached:", String(describing: isTargetReached))
         print("-------------------------")
         
-        
         //the user's streak is lost and the goal is unsuccessful.
-        if hoursPassed >= 32 {
+        if hoursPassed > 32 {
             
             target.streakCounter = 0
             target.freezeCounter = 0

@@ -44,7 +44,7 @@ struct editTarget : View {
                             )
                     }
                     .buttonStyle(.plain)
-                    .frame(width: 40, height: 40)
+                    .frame(width: 36, height: 36)
                 }
             }
             .alert(

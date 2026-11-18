@@ -40,7 +40,7 @@ struct setTarget : View {
                                 )
                         }
                         .buttonStyle(.plain)
-                        .frame(width: 40, height: 40)
+                        .frame(width: 36, height: 36)
                 }
             }
         //if no instance of the viewModel exists create it

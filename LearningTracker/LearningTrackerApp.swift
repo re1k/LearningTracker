@@ -26,7 +26,7 @@ struct MyApp: App {
                     Home()
                         .transition(.opacity)
                 } else {
-                    OnBorading()
+                    Onboarding()
                         .transition(.opacity)
                 }
             } //for smoother transition to home

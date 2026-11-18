@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 // onborading page: taking first time (goal + duration)
-struct OnBorading: View {
+struct Onboarding: View {
     
     //The Screen: Has State ownership and coordination, Creates the ViewModel
     //manage values inside UI views, pass it to viewModel
@@ -93,5 +93,5 @@ struct OnBorading: View {
 
 
 #Preview {
-    OnBorading()
+    Onboarding()
 }

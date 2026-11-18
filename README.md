@@ -5,6 +5,11 @@
 **Steady** is a learning habit tracker designed to help you build consistency, stay motivated, and make every day count.
 
 Building a new habit isn't always easy. Some days you learn, some days you need a break, and that's okay. Steady encourages progress over perfection, one day at a time.
+
+<p align="center">
+  <img src="AppReview/AppReviewDark.png" width="700" alt="Steady App Poster"/>
+</p>
+
 ## About the App
 
 Steady helps you turn learning into a consistent daily habit through simple goal tracking, learning streaks, and a flexible freeze-day system.
@@ -43,6 +48,17 @@ Steady follows the **Model-View-ViewModel (MVVM)** architectural pattern.
 
 Designed with simplicity, clarity, and a little sparkle in mind.
 
-- Native SwiftUI navigation.
-- Light, Dark and Mono app icons using Icon Composer
-- Apple's native Liquid Glass components.
+- **Adaptive Appearance:** Supports Light and Dark Mode, adapting the interface to the user's preferred system appearance with app icons using Icon Composer.
+- **App Icons:** Light, Dark, and Tinted app icon variants created using Apple's Icon Composer.
+- **Liquid Glass:** Uses Apple's native SwiftUI Liquid Glass components for a modern, system-integrated interface.
+- **Native Navigation:** Uses SwiftUI navigation components for a familiar iOS experience.
+- **Visual Feedback:** Uses distinct colors and symbols to communicate learning streaks, freeze days, and skipped days.
+## 🧪 Debug Seed Data
+
+Steady includes a debug-only seed data generator to populate historical activity for development and testing.
+
+- **Historical Data Generation:** Generates sample activity covering the previous three calendar months.
+- **Realistic Activity Patterns:** Includes learning streaks, freeze days, and skipped days.
+- **Calendar Testing:** Populates historical dates to test monthly calendar layouts and activity visualization.
+- **Real Activity:** Today's and future activity remain controlled by the app's normal logging logic.
+- **Development Only:** Seed data generation is restricted to Debug builds using `#if DEBUG`.-
