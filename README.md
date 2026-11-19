@@ -19,8 +19,7 @@ Steady helps you turn learning into a consistent daily habit through simple goal
 - 🎯 **Learning Goals:** Set a learning target with a chosen duration.
 - 🔥 **Streak Tracking:** Track consecutive learning days and celebrate consistency.
 - ❄️ **Freeze System:** Protect your streak with a limited number of freeze days.
-- 📅 **Calendar History:** Explore your learning journey through a weekly calendar and daily logs.
-- 🏆 **Goal Completion:** Celebrate successful goals or reflect when a streak comes to an end.
+- 📅 **Calendar History:** Explore your learning journey through a calendar with your daily logs.
 - ✏️ **Goal Management:** Edit your learning target and reset your progress.
 
 ## 🛠️ Built With
