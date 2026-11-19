@@ -2,13 +2,11 @@
 
 *A little progress every day goes a long way.*
 
-**Steady** is a learning habit tracker designed to help you build consistency, stay motivated, and make every day count.
-
-Building a new habit isn't always easy. Some days you learn, some days you need a break, and that's okay. Steady encourages progress over perfection, one day at a time.
-
 <p align="center">
   <img src="AppReview/AppReviewDark.png" width="700" alt="Steady App Poster"/>
 </p>
+
+**Steady** is a learning habit tracker designed to help you build consistency, stay motivated, and make every day count. Because Building a new habit isn't always easy. Some days you learn, some days you need a break, and that's okay. Steady encourages progress over perfection, one day at a time.
 
 ## About the App
 
